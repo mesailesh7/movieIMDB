@@ -3,6 +3,7 @@ import "./App.css";
 
 import Search from "./components/Search";
 
+//Api
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const API_OPTIONS = {
@@ -21,13 +22,12 @@ function App() {
     try {
       const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
       const response = await fetch(endpoint, API_OPTIONS);
-      if (~response.ok) {
+      if (!response.ok) {
         throw new Error("Failed to fetch movies");
-
-        const data = await response.json();
-
-        console.log(data);
       }
+      const data = await response.json();
+
+      console.log(data);
     } catch (error) {
       console.error(`Error fetch movies: ${error}`);
       seterrorMessage("Error fetching Movies: Please try again");
