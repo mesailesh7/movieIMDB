@@ -5,6 +5,7 @@ import "./App.css";
 import Search from "./components/Search";
 import Spinner from "./components/spinner";
 import MovieCard from "./components/MovieCard";
+import { updateSearchCount } from "./appwrite";
 
 //Api
 const API_BASE_URL = "https://api.themoviedb.org/3";
@@ -49,6 +50,10 @@ function App() {
         return;
       }
       setMovieList(data.results || []);
+
+      if (query && data.results.length > 0) {
+        await updateSearchCount(query, data.results[0]);
+      }
 
       console.log(data);
     } catch (error) {
