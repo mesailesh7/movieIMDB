@@ -20,18 +20,23 @@ export const updateSearchCount = async (searchTerm, movie) => {
     //   Query.equal("searchTerm", searchTerm),
     // ]);
 
-    const result = database.listRows({
+    const result = await database.listRows({
       databaseId: DATABASE_ID,
       tableId: TABLE_ID,
       queries: [Query.equal("searchTerm", searchTerm)],
     });
 
-    //2. if it does, update the count
-    if (result.documents?.length > 0) {
-      const doc = result.documents[0];
+    console.log(result);
 
-      await database.updateDocument(DATABASE_ID, COLLECTION_ID, doc.$id, {
-        count: doc.count + 1,
+    //2. if it does, update the count
+    if (result.rows && result.rows.length > 0) {
+      const doc = result.rows[0];
+
+      await database.updateRow({
+        databaseId: DATABASE_ID,
+        tableId: TABLE_ID,
+        rowId: doc.$id,
+        data: { count: doc.count + 1 },
       });
       //3. if it doesn't create a new document with the search term and count as 1
     } else {
