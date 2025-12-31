@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useDebounce, useStateList } from "react-use";
+import { useDebounce } from "react-use";
 import "./App.css";
 
 import Search from "./components/Search";
 import Spinner from "./components/spinner";
 import MovieCard from "./components/MovieCard";
-import { updateSearchCount } from "./appwrite";
+import { getTrendingMovies, updateSearchCount } from "./appwrite";
 
 //Api
 const API_BASE_URL = "https://api.themoviedb.org/3";
@@ -22,6 +22,7 @@ function App() {
   const [searchTerm, setsearchTerm] = useState("");
   const [errorMessage, seterrorMessage] = useState(null);
   const [movieList, setMovieList] = useState([]);
+  const [trendingMovies, setTrendingMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -45,7 +46,7 @@ function App() {
       const data = await response.json();
 
       if (data.Response == "False") {
-        throw new Error("Failed to fetch movies");
+        seterrorMessage(data.Error || "Failed to fetch movies");
         setMovieList([]);
         return;
       }
@@ -64,9 +65,22 @@ function App() {
     }
   };
 
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies);
+    } catch (error) {
+      console.log(`Error fetching trending movies: ${error}`);
+    }
+  };
+
   useEffect(() => {
     fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
 
   return (
     <>
@@ -81,6 +95,19 @@ function App() {
             </h1>
             <Search searchTerm={searchTerm} setsearchTerm={setsearchTerm} />
           </header>
+          {trendingMovies.length > 0 && (
+            <section className="trending">
+              <h2>Trending Movies</h2>
+              <ul>
+                {trendingMovies.map((movie, index) => (
+                  <li key={movie.$id}>
+                    <p>{index + 1}</p>
+                    <img src={movie.poster_url} alt={movie.title} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <section className="all-movies">
             <h2>All Movies</h2>
             {isLoading ? (
